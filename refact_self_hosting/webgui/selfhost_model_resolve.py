@@ -29,6 +29,10 @@ def resolve_model(model_name: str, cursor_file: str, function: str) -> Tuple[str
         if not m_size:
             m_size = "15b"
 
+    elif m_company == "codet5":
+        if not m_size:
+            m_size = "plus-770M-python"
+
     else:
         m_company = "CONTRASTcode"
         m_size = "3b"
