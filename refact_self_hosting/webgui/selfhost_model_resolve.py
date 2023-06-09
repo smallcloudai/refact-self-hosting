@@ -33,10 +33,11 @@ def resolve_model(model_name: str, cursor_file: str, function: str) -> Tuple[str
         if not m_size:
             m_size = "plus-770M-python"
 
-    else:
-        m_company = "CONTRASTcode"
-        m_size = "3b"
-        m_specialization = "multi"
+    # @oleg: imo useless
+    # else:
+    #     m_company = "CONTRASTcode"
+    #     m_size = "3b"
+    #     m_specialization = "multi"
 
     result = "/".join([m_company, m_size, m_specialization, m_version])
     result = result.rstrip("/")

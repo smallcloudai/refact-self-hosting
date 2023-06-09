@@ -64,8 +64,10 @@ class Inference:
 
     def _prepare_scratchpad(self, request: Dict[str, Any]):
         return ScratchpadCodeTF(
-            input_text=request['prompt'],
-            code_tf_model=self._model_setup()
+            sources=request['sources'],
+            code_tf_model=self._model_setup(),
+            cursor0=request['cursor0'],
+            cursor1=request['cursor1'],
         )
 
     def _generate_using_scratchpad(self, scratchpad: ScratchpadCodeTF):
@@ -139,7 +141,9 @@ def worker_loop(
             'function': 'completion',
             'echo': False,
             'stop_tokens': [],
-            'prompt': 'Hello world',
+            'sources': {"hello.py": "def hello_world():"},
+            'cursor0': 3,
+            'cursor1': 3,
             'created': time.time(),
         }
     ]
@@ -147,10 +151,11 @@ def worker_loop(
     inference_model.infer(dummy_calls[0], DummyUploadProxy, {})
 
     req_session = inference_server.infserver_session()
+    model = f'{model_name}/{model_type}'.replace('-', '_')
     description_dict = inference_server.validate_description_dict(
-        model_name + "_" + socket.getfqdn(),
+        model + "_" + socket.getfqdn(),
         "account_name",
-        model=model_name, B=1, max_thinking_time=10,
+        model=model, B=1, max_thinking_time=10,
     )
     upload_proxy = inference_server.UploadProxy(
         upload_q=None, cancelled_q=None)
