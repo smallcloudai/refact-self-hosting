@@ -1,5 +1,5 @@
 models_tf_mini_db = {
-    'codet5/plus-770M-python': {
+    'codet5/plus_770M_python': {
         'model_class': 'code_contrast:CodeTFModel',
         'diff_scratchpad_class': 'code_contrast:CodeTFScratchpad',
         'model_name': 'codet5',
