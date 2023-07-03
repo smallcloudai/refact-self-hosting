@@ -53,8 +53,14 @@ Install plugin for your IDE:
 
 The recommended way to run server is a pre-build Docker image.
 
-Install [Docker with NVidia GPU support](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker).
-On Windows you need to install WSL 2 first, [one guide to do this](https://docs.docker.com/desktop/install/windows-install).
+#### Linux
+
+Install Docker with NVidia GPU support following [this guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker).
+
+#### Windows
+
+Install WSL 2 and then install Docker, [one guide to do this](https://docs.docker.com/desktop/install/windows-install).
+After installation, run docker-desktop to up down docker service.
 
 
 <details><summary>Docker tips & tricks</summary>
@@ -87,20 +93,27 @@ docker logs -f
 ```
 </details>
 
-Choose model from available ones.
-
 Run docker container with following command:
 ```commandline
 docker run --rm --gpus all -p 8008:8008 -v refact_workdir:/perm_storage smallcloud/refact_self_hosting_enterprise
 ```
-After start container will automatically download the chosen model.
-
+After start container will automatically download **CONTRASTcode/3b/model**. It takes time and depends
+on your internet connection.
 
 
 ### Running Manually
 
 Coming soon...
 
+
+## Server configuration
+
+Server has web interface and can be accessed at:
+```commandline
+http://localhost:8008
+```
+
+Coming soon...
 
 
 ## Setting Up Plugins
