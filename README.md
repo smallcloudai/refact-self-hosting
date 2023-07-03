@@ -141,7 +141,7 @@ accurate code suggestions. Fine-tuning essentially helps the model memorize the 
 structures commonly found in your code, resulting in improved suggestions tailored to your
 coding style and requirements.
 
-Read this [guide](docs/getting_started.md) to learn how to fine-tune your model.
+Read this [guide](docs/fine_tuning.md) to learn how to fine-tune your model.
 
 
 ## Community & Support
