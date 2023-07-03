@@ -574,3 +574,8 @@ h3 {
     font-size: 12px;
     font-weight: bold;
 }
+.upload-tab-table-count-sort,
+.upload-tab-table-mime-sort
+ {
+    cursor: pointer;
+}
