@@ -13,22 +13,23 @@ This server allows you to run AI coding models on your hardware, your code doesn
 
 At the moment, you can choose between following models:
 
-| Model                                                                                | GPU (VRAM) | CPU (RAM) | Completion | AI Toolbox | Chat | Languages supported                                |
-| ------------------------------------------------------------------------------------ | ---------- | --------- | ---------- | ---------- | ---- | -------------------------------------------------- |
-| [CONTRASTcode/medium/multi](https://huggingface.co/smallcloudai/codify_medium_multi) |        3Gb |       3Gb |          + |            |      | [20+ Programming Languages](https://refact.ai/faq) |
-| [CONTRASTcode/3b/multi](https://huggingface.co/smallcloudai/codify_3b_multi)         |        8Gb |      12Gb |          + |            |      | [20+ Programming Languages](https://refact.ai/faq) |
-| [starcoder/15b/base4bit](https://huggingface.co/smallcloudai/starcoder_15b_4bit)     |       16Gb |         - |          + |          + |    + | [80+ Programming languages](https://huggingface.co/blog/starcoder) |
-| [starcoder/15b/base8bit](https://huggingface.co/smallcloudai/starcoder_15b_8bit)     |       32Gb |         - |          + |          + |    + | [80+ Programming languages](https://huggingface.co/blog/starcoder) |
+| Model                                                                                | GPU (VRAM) | Completion | AI Toolbox | Chat | Fine tuning | Languages supported                                |
+|--------------------------------------------------------------------------------------|-----------:|:----------:|:----------:|:----:|:-----------:| -------------------------------------------------- |
+| [CONTRASTcode/medium/multi](https://huggingface.co/smallcloudai/codify_medium_multi) |        3Gb |     +      |            |      |             | [20+ Programming Languages](https://refact.ai/faq) |
+| [CONTRASTcode/3b/multi](https://huggingface.co/smallcloudai/codify_3b_multi)         |        8Gb |     +      |            |      |      +      | [20+ Programming Languages](https://refact.ai/faq) |
+| [starchat/15b/beta8bit](https://huggingface.co/rahuldshetty/starchat-beta-8bit)      |       16Gb |            |            |  +   |             | [80+ Programming languages](https://huggingface.co/blog/starchat-alpha) |
+| [starcoder/15b/base4bit](https://huggingface.co/smallcloudai/starcoder_15b_4bit)     |       16Gb |     +      |     +      |  +   |             | [80+ Programming languages](https://huggingface.co/blog/starcoder) |
+| [starcoder/15b/base8bit](https://huggingface.co/smallcloudai/starcoder_15b_8bit)     |       32Gb |     +      |     +      |  +   |             | [80+ Programming languages](https://huggingface.co/blog/starcoder) |
 
 Refact is currently available as a plugin for [JetBrains](https://plugins.jetbrains.com/plugin/20647-refact-ai)
 products and [VS Code IDE](https://marketplace.visualstudio.com/items?itemName=smallcloud.codify).
 
-NEW: you can fine-tune the model on your own hardware!
 
 
 ## Known limitations
 
-- For best results on smaller GPUs we recommend using CONTRASTcode models as the StarCoder models can be quite slow
+- For best results on smaller GPUs we recommend using CONTRASTcode models as the StarCoder and StarChat models can be quite slow
+
 
 
 ## Demo
@@ -38,6 +39,7 @@ NEW: you can fine-tune the model on your own hardware!
 <th><img src="https://plugins.jetbrains.com/files/20647/screenshot_277b57c5-2104-4ca8-9efc-1a63b8cb330f" align="center"/></th>
 </tr>
 </table>
+
 
 
 ## Getting started
@@ -89,11 +91,7 @@ Choose model from available ones.
 
 Run docker container with following command:
 ```commandline
-docker run --rm --gpus 0 -p 8008:8008 -v refact_workdir:/workdir --env SERVER_MODEL=<model name> smallcloud/refact_self_hosting
-```
-If you don't have a suitable GPU run it on CPU:
-```commandline
-docker run --rm -p 8008:8008 -v refact_workdir:/workdir --env SERVER_MODEL=<model name> smallcloud/refact_self_hosting
+docker run --rm --gpus all -p 8008:8008 -v refact_workdir:/perm_storage smallcloud/refact_self_hosting_enterprise
 ```
 After start container will automatically download the chosen model.
 
@@ -101,22 +99,15 @@ After start container will automatically download the chosen model.
 
 ### Running Manually
 
-To run server manually, install this repo first (this might install a lot of packages on your computer):
-```commandline
-pip install git+https://github.com/smallcloudai/code-contrast.git
-pip install git+https://github.com/smallcloudai/refact-self-hosting.git
-```
-Now you can run server with following command:
-```commandline
-python -m refact_self_hosting.server --workdir /workdir --model <model name>
-```
+Coming soon...
+
 
 
 ## Setting Up Plugins
 
 Go to plugin settings and set up a custom inference url:
 ```commandline
-https://localhost:8008
+http://localhost:8008
 ```
 <details><summary>JetBrains</summary>
 Settings > Tools > Refact.ai > Advanced > Inference URL
@@ -129,13 +120,6 @@ Extensions > Refact.ai Assistant > Settings > Infurl
 Now it should work, just try to write some code! If it doesn't, please report your experience to
 [GitHub issues](https://github.com/smallcloudai/refact-self-hosting/issues).
 
-
-and set up this inference url in plugin:
-
-```commandline
-https://inference.smallcloud.local:8008
-```
-</details>
 
 
 ## Fine Tuning
