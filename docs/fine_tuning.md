@@ -14,3 +14,5 @@ There's a catch: both VS Code and JB plugins cache the responses. To force the m
 a new suggestion (rather than immediately responding with a cached one), you can change the text
 a few lines above, for example, a comment. Alternatively,
 you can use the Manual Suggestion Trigger (a key combination), which always produces a new suggestion.
+
+[Here](fine_tuning_step_by_step.pdf) you can find step-by-step instruction for fine tuning process.

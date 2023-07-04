@@ -9,6 +9,9 @@ http://localhost:8008
 
 By default server sets **CONTRASTcode/3b/multi** model on all available GPUs.
 
+You can change it to another model or if you have more than one GPU, add models
+with Chat/Toolbox features.
+
 
 ## Enable 3rd Party APIs
 
