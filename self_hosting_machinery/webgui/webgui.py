@@ -18,8 +18,6 @@ from self_hosting_machinery.webgui.selfhost_fastapi_completions import Completio
 from self_hosting_machinery.webgui.selfhost_fastapi_gpu import GPURouter
 from self_hosting_machinery.webgui.tab_server_logs import TabServerLogRouter
 from self_hosting_machinery.webgui.tab_settings import TabSettingsRouter
-from self_hosting_machinery.webgui.tab_upload import TabUploadRouter
-from self_hosting_machinery.webgui.tab_finetune import TabFinetuneRouter
 from self_hosting_machinery.webgui.tab_models_host import TabHostRouter
 
 
@@ -51,15 +49,17 @@ if __name__ == "__main__":
 
     app = FastAPI(docs_url=None, redoc_url=None)
 
+    try:
+        from refact_data_pipeline.webgui import register_routers
+        register_routers(app)
+    except ImportError:
+        pass
     app.include_router(CompletionsRouter(prefix="/v1", id2ticket=id2ticket, user2gpu_queue=user2gpu_queue))
     app.include_router(GPURouter(prefix="/infengine-v1", id2ticket=id2ticket, user2gpu_queue=user2gpu_queue))
     app.include_router(TabServerLogRouter())
-    app.include_router(TabUploadRouter())
-    app.include_router(TabFinetuneRouter())
     app.include_router(TabHostRouter())
     app.include_router(TabSettingsRouter())
     app.include_router(StaticRouter())
-
 
     app.add_middleware(
         CORSMiddleware,

@@ -120,16 +120,3 @@ def load_checkpoint(model, root_path: str, repo_id: Optional[str] = None) -> tor
     model.model_name = repo_id
 
     return model
-
-
-def load_finetune_checkpoint(model, root_path: str, repo_id: Optional[str] = None) -> torch.nn.Module:
-    finetune_cp = _load_filename(root_path, 'mp_rank_00_model_states.pt', repo_id)
-    model = model.apply_lora(model=model, **finetune_cp['ds_config']['model_info']['lora'])
-    model.load_state_dict(finetune_cp['module'], strict=False)
-    return model
-
-
-def load_finetune_checkpoint_only(model, root_path: str) -> torch.nn.Module:
-    finetune_cp = _load_filename(root_path, 'mp_rank_00_model_states.pt', None)
-    model.load_state_dict(finetune_cp['module'], strict=False)
-    return model

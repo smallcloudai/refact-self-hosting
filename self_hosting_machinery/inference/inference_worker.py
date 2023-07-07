@@ -6,25 +6,19 @@ import time
 import traceback
 import signal
 import socket
-import datetime
 import importlib
-import json
 
 from collections import defaultdict
 
 from refact_scratchpads import ScratchpadBase
 from refact_scratchpads import ScratchpadCompletion
 
-from self_hosting_machinery.scripts import best_lora
 from known_models_db.refact_known_models import models_mini_db
 
 from refact_models import CodifyModel
 from refact_models import HFModel
 from refact_models import GPTQBigCodeModel
 from refact_models import StarChatModel
-from refact_models.checkpoint_loader import (
-    load_finetune_checkpoint, load_finetune_checkpoint_only, load_checkpoint_embeddings
-)
 from typing import Optional, Dict, Any, List
 
 from self_hosting_machinery import env
@@ -53,8 +47,7 @@ class Inference:
 
     def __init__(self,
                  model_name: str,
-                 force_cpu: bool = False,
-                 load_lora: Optional[str] = None):
+                 force_cpu: bool = False):
         if model_name not in models_mini_db:
             raise RuntimeError(f"unknown model \"{model_name}\", try upgrading this repo")
         self._model_name = model_name
@@ -69,8 +62,6 @@ class Inference:
 
         self._lora_on = False
         self._lora_checkpoint_dir = ""
-        if load_lora is not None:
-            self.lora_switch(on=True, lora_checkpoint_dir=load_lora)
 
     @staticmethod
     def _model_setup(model_dict: Dict, device: str):
@@ -301,70 +292,17 @@ class Inference:
             logging.error(e)
             logging.error(traceback.format_exc())
 
-    def lora_switch(self, *, lora_checkpoint_dir: str):
-        on = not not lora_checkpoint_dir
-        if self._lora_on and not on:
-            log("deactivating lora")
-            self._model = self._model.exclude_lora(self._model)
-            self._model = load_checkpoint_embeddings(self._model, self._model.cache_dir, self._model.model_name)
-            self._lora_on = False
-        elif not self._lora_on and on:
-            log("activating lora %s" % lora_checkpoint_dir)
-            self._model = load_finetune_checkpoint(self._model, lora_checkpoint_dir)
-            self._lora_checkpoint_dir = lora_checkpoint_dir
-            self._lora_on = True
-        elif self._lora_on and self._lora_checkpoint_dir != lora_checkpoint_dir:
-            try:
-                self._model = load_finetune_checkpoint_only(self._model, lora_checkpoint_dir)
-            except RuntimeError as e:
-                log("failed to quick load lora checkpoint: %s" % e)
-                log("will try to remove lora and add again")
-                self._model = self._model.exclude_lora(self._model)
-                self._lora_checkpoint_dir = ""
-                self._lora_on = False
-                self._model = load_finetune_checkpoint(self._model, lora_checkpoint_dir)
-                self._lora_checkpoint_dir = lora_checkpoint_dir
-                self._lora_on = True
-        if lora_checkpoint_dir:
-            log("using lora %s" % lora_checkpoint_dir)
 
-    def lora_switch_according_to_config(self):
-        if not os.path.exists(env.CONFIG_ACTIVE_LORA):
-            self.lora_switch(lora_checkpoint_dir="")
-            return
-        j = json.load(open(env.CONFIG_ACTIVE_LORA))
-        # {
-        #     "model": "",
-        #     "lora_mode": "specific",
-        #     "specific_lora_run_id": "lora-20230614-164840",
-        #     "specific_checkpoint": "iter0666"
-        # }
-        # NOTE: lora only for 3b model now
-        if self._model_name not in ["CONTRASTcode/3b/multi"]:
-            log("lora disabled for %s" % self._model_name)
-            self.lora_switch(lora_checkpoint_dir="")
-            return
-        if j["lora_mode"] not in ["specific", "latest-best"]:
-            self.lora_switch(lora_checkpoint_dir="")
-            return
-        lora_checkpoint_dir = ""
-        some_problem_with_explicit = False
-        if j["lora_mode"] == "specific":
-            t = os.path.join(env.DIR_LORAS, j["specific_lora_run_id"], "checkpoints", j["specific_checkpoint"])
-            if os.path.isdir(t):
-                lora_checkpoint_dir = t
-            else:
-                log("lora cannot find \"%s\", switching to latest-best" % t)
-                some_problem_with_explicit = True
-        if j["lora_mode"] == "latest-best" or some_problem_with_explicit:
-            tmp = best_lora.find_best_lora(self._model_name)
-            lora_checkpoint_dir = tmp["path"]
-        self.lora_switch(lora_checkpoint_dir=lora_checkpoint_dir)
+try:
+    from refact_data_pipeline.inference import lora_switch_according_to_config
+except ImportError:
+    def lora_switch_according_to_config(inference: Inference):
+        pass
 
 
-def worker_loop(model_name: str, cpu: bool, load_lora: str, compile: bool):
+def worker_loop(model_name: str, cpu: bool, compile: bool):
     log("STATUS loading model")
-    inference_model = Inference(model_name=model_name, force_cpu=cpu, load_lora=load_lora)
+    inference_model = Inference(model_name=model_name, force_cpu=cpu)
     class DummyUploadProxy:
         def upload_result(*args, **kwargs):
             pass
@@ -403,7 +341,7 @@ def worker_loop(model_name: str, cpu: bool, load_lora: str, compile: bool):
             req_session, description_dict, verbose=False)
         ts_arrived = time.time()
         if retcode == "OK":
-            inference_model.lora_switch_according_to_config()
+            lora_switch_according_to_config(inference_model)
             for request in request_batch:
                 upload_proxy_args = {
                     "description_dict": description_dict,
@@ -447,10 +385,9 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--model", type=str)
     parser.add_argument("--cpu", action="store_true")
-    parser.add_argument("--load-lora")
     parser.add_argument("--compile", action="store_true", help="download and compile triton kernels, quit")
     args = parser.parse_args()
 
     signal.signal(signal.SIGUSR1, catch_sigkill)
 
-    worker_loop(args.model, args.cpu, args.load_lora, compile=args.compile)
+    worker_loop(args.model, args.cpu, compile=args.compile)
